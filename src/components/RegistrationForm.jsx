@@ -7,32 +7,6 @@ import Header from "../assets/Group 85.png";
 import { useNavigate } from "react-router-dom";
 
 
-
-export default function RegistrationForm() {
-
-  const navigate = useNavigate()
-
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    country: '',
-    region: '',
-    email: '',
-    confirmEmail: '',
-    nationality: '',
-    mobile: '',
-    companyName: '',
-    jobTitle: '',
-    companyType: '',
-    industry: '',
-    selectedProducts: '',
-    promoCode: '',
-    agreeTerms: '',
-    agreeMarketing: '',
-    modalapply: false
-  })
-
-
   const countryCodes = [
     { code: "+971", label: "🇦🇪" },
     { code: "+1", label: "🇺🇸" },
@@ -45,63 +19,6 @@ export default function RegistrationForm() {
     { code: "+39", label: "🇮🇹" },
     { code: "+86", label: "🇨🇳" },
   ];
-
-
-  const [currentStep, setCurrentStep] = useState(1)
-  const [formErrors, setFormErrors] = useState({});
-
-  const updateFormData = useCallback((field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setFormErrors((prev) => ({ ...prev, [field]: "" }));
-  }, []);
-
-
-  const validateForm = () => {
-    const errors = {};
-
-    if (!formData.firstName.trim()) errors.firstName = "First name is required";
-    if (!formData.lastName.trim()) errors.lastName = "Last name is required";
-    if (!formData.country.trim()) errors.country = "Country is required";
-    if (!formData.email.trim()) errors.email = "Email is required";
-    if (!formData.mobile.trim()) errors.mobile = "Mobile number is required";
-    if (!formData.companyName.trim()) errors.companyName = "Company name is required";
-    if (!formData.jobTitle.trim()) errors.jobTitle = "Job title is required";
-    if (!formData.companyType.trim()) errors.companyType = "Company type is required";
-    if (!formData.industry.trim()) errors.industry = "Industry is required";
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-
-
-  const nextStep = () => {
-    if (validateForm()) {
-      if (currentStep < 2) {
-        setCurrentStep(currentStep + 1);
-      } else if (currentStep === 2) {
-        navigate('/thank-you');
-      }
-    }
-  };
-
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-    }
-  }
-
-  //  Modal Open 
-
-  const [modal, setModal] = useState({
-    product: false
-  });
-
-  // Products
-
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedProducts, setSelectedProducts] = useState([])
 
   const productsList = [
     { id: 1, name: "Global Leaders Forum NEW", days: 3 },
@@ -117,23 +34,6 @@ export default function RegistrationForm() {
     { id: 11, name: "Digital Finance", days: 1 },
     { id: 12, name: "Future Mobility", days: 1 },
   ]
-
-  const filteredProducts = searchQuery
-    ? productsList.filter((product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : productsList
-
-  const handleProductToggle = (productId) => {
-    setSelectedProducts((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
-    );
-  };
-
-  const handleApply = () => {
-    setModal({ product: false })
-    setFormData({ ...formData, modalapply: true })
-  }
 
   const modalProductList = [
     { id: 13, name: "Global Leaders Forum !NEW (3 Days)" },
@@ -170,55 +70,13 @@ export default function RegistrationForm() {
     "Cognitive Computing",
   ];
 
-  const [selectedMain, setSelectedMain] = useState(mainCategories[0]);
-  const [selectedSub, setSelectedSub] = useState(subCategories[0]);
-
-  //  Promo Code
-
-  const [promoCode, setPromoCode] = useState("")
-  const [appliedPromo, setAppliedPromo] = useState(null)
-  const [error, setError] = useState("")
-
-
-  // Mock promo codes for demonstration
-
   const validPromoCodes = {
     GITEX15: { discount: 19, type: "percentage", discountAmount: 40, appliedTo: "2 lowest-priced tickets" },
     SAVE20: { discount: 20, type: "percentage", discountAmount: 15, appliedTo: "all tickets" },
     DISCOUNT50: { discount: 50, type: "fixed", discountAmount: 20, appliedTo: "premium tickets" },
   }
 
-  const handleApplyPromo = async () => {
-    if (!promoCode.trim()) {
-      setError("Please enter a promo code");
-      return;
-    }
-
-    const promo = validPromoCodes[promoCode.toUpperCase()];
-
-    if (promo) {
-      setAppliedPromo({
-        code: promoCode.toUpperCase(),
-        discount: promo.discount,
-        type: promo.type,
-        appliedTo: promo.appliedTo,
-      });
-
-      setError("");
-    } else {
-      setError("Invalid promo code. Please try again.");
-    }
-  };
-
-  const handleRemovePromo = () => {
-    setAppliedPromo(null)
-    setPromoCode("")
-    setError("")
-    onPromoRemoved?.()
-  }
-
-
-  const Stepper = ({ currentStep }) => (
+export const Stepper = ({ currentStep }) => (
     <div className="flex items-center justify-center mb-2">
       {[1, 2].map((step, index) => (
         <React.Fragment key={step}>
@@ -237,7 +95,24 @@ export default function RegistrationForm() {
   )
 
 
-  const Step1 = () => (
+export const Step1 = ({
+  formData,
+  formErrors,
+  updateFormData,
+  countryCodes,
+  productsList,
+  selectedProducts,
+  handleProductToggle,
+  setModal,
+  modal,
+  mainCategories,
+  subCategories,
+  selectedMain,
+  setSelectedMain,
+  selectedSub,
+  setSelectedSub,
+}) => {
+  return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="bg-green-600 text-white p-4 flex justify-between items-center">
         <h2 className="text-xl font-semibold">Registration Information 1</h2>
@@ -329,7 +204,7 @@ export default function RegistrationForm() {
               {formErrors.email && (<p className="text-sm text-red-500 italic mt-1">{formErrors.email}</p>)}
             </div>
             <div>
-              <label htmlFor="confirmEmail" className="block text-sm font-medium text-gray-700 mb-1">Confirm Email address</label>
+              <label htmlFor="confirmEmail" className="block text-sm font-medium text-gray-700 mb-1">Confirm Email address<span className="text-red-500">*</span></label>
               <input
                 type="email"
                 id="confirmEmail"
@@ -340,6 +215,7 @@ export default function RegistrationForm() {
                 value={formData.confirmEmail}
                 onChange={(e) => updateFormData("confirmEmail", e.target.value)}
               />
+              {formErrors.confirmEmail && (<p className="text-sm text-red-500 italic mt-1">{formErrors.confirmEmail}</p>)}
             </div>
           </div>
 
@@ -369,7 +245,7 @@ export default function RegistrationForm() {
                   ))}
                 </select>
                 <input
-                  type="tel"
+                  type="number"
                   id="mobile"
                   name="mobile"
                   className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
@@ -547,8 +423,20 @@ export default function RegistrationForm() {
       </div>
     </div>
   )
+}
 
-  const Step2 = () => (
+export const Step2 = ({
+  formData,
+  updateFormData,
+  promoCode,
+  setPromoCode,
+  error,
+  appliedPromo,
+  validPromoCodes,
+  handleApplyPromo,
+  handleRemovePromo,
+}) => {
+  return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="bg-green-600 text-white p-4">
         <h2 className="text-xl font-semibold">Registration Summary</h2>
@@ -697,6 +585,239 @@ export default function RegistrationForm() {
       </div>
     </div>
   )
+}
+
+export default function RegistrationForm() {
+
+  const navigate = useNavigate()
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    country: '',
+    region: '',
+    email: '',
+    confirmEmail: '',
+    nationality: '',
+    mobile: '',
+    companyName: '',
+    jobTitle: '',
+    companyType: '',
+    industry: '',
+    selectedProducts: '',
+    promoCode: '',
+    agreeTerms: '',
+    agreeMarketing: '',
+    modalapply: false
+  })
+
+
+  const countryCodes = [
+    { code: "+971", label: "🇦🇪" },
+    { code: "+1", label: "🇺🇸" },
+    { code: "+91", label: "🇮🇳" },
+    { code: "+44", label: "🇬🇧" },
+    { code: "+81", label: "🇯🇵" },
+    { code: "+61", label: "🇦🇺" },
+    { code: "+49", label: "🇩🇪" },
+    { code: "+33", label: "🇫🇷" },
+    { code: "+39", label: "🇮🇹" },
+    { code: "+86", label: "🇨🇳" },
+  ];
+
+
+  const [currentStep, setCurrentStep] = useState(1)
+  const [formErrors, setFormErrors] = useState({});
+
+  const updateFormData = useCallback((field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormErrors((prev) => ({ ...prev, [field]: "" }));
+  }, []);
+
+
+  const validateForm = () => {
+    const errors = {};
+
+    if (!formData.firstName.trim()) errors.firstName = "First name is required";
+    if (!formData.lastName.trim()) errors.lastName = "Last name is required";
+    if (!formData.country.trim()) errors.country = "Country is required";
+
+    if (!formData.email.trim()) {
+      errors.email = "Email is required";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        errors.email = "Invalid email format";
+      }
+    }
+
+    if (!formData.confirmEmail.trim()) {
+      errors.confirmEmail = "Please confirm your email";
+    } else if (formData.email !== formData.confirmEmail) {
+      errors.confirmEmail = "Emails do not match";
+    }
+
+    if (!formData.mobile.trim()) {
+      errors.mobile = "Mobile number is required";
+    } else {
+      const mobileRegex = /^[0-9]{10}$/;
+      if (!mobileRegex.test(formData.mobile)) {
+        errors.mobile = "Invalid mobile number (must be 10 digits)";
+      }
+    }
+
+    if (!formData.companyName.trim()) errors.companyName = "Company name is required";
+    if (!formData.jobTitle.trim()) errors.jobTitle = "Job title is required";
+    if (!formData.companyType.trim()) errors.companyType = "Company type is required";
+    if (!formData.industry.trim()) errors.industry = "Industry is required";
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+
+  const nextStep = () => {
+    if (validateForm()) {
+      if (currentStep < 2) {
+        setCurrentStep(currentStep + 1);
+      } else if (currentStep === 2) {
+        navigate('/thank-you');
+      }
+    }
+  };
+
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
+
+  //  Modal Open 
+
+  const [modal, setModal] = useState({
+    product: false
+  });
+
+  // Products
+
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedProducts, setSelectedProducts] = useState([])
+
+  const productsList = [
+    { id: 1, name: "Global Leaders Forum NEW", days: 3 },
+    { id: 2, name: "GITEX Main Stage", days: 1 },
+    { id: 3, name: "Artificial Intelligence & Robotics", days: 1 },
+    { id: 4, name: "Future Health NEW", days: 2 },
+    { id: 5, name: "Cybersecurity", days: 1 },
+    { id: 6, name: "Future Health NEW", days: 2 },
+    { id: 7, name: "Digital Cities", days: 1 },
+    { id: 8, name: "Fintech", days: 1 },
+    { id: 9, name: "Energy Transition", days: 1 },
+    { id: 10, name: "Intelligent Connectivity", days: 1 },
+    { id: 11, name: "Digital Finance", days: 1 },
+    { id: 12, name: "Future Mobility", days: 1 },
+  ]
+
+  const filteredProducts = searchQuery
+    ? productsList.filter((product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : productsList
+
+  const handleProductToggle = (productId) => {
+    setSelectedProducts((prev) =>
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
+
+  const handleApply = () => {
+    setModal({ product: false })
+    setFormData({ ...formData, modalapply: true })
+  }
+
+  const modalProductList = [
+    { id: 13, name: "Global Leaders Forum !NEW (3 Days)" },
+    { id: 14, name: "GITEX Main Stage" },
+    { id: 15, name: "Artificial Intelligence & Robotics (15)" },
+    { id: 16, name: "Future Health !NEW (2 Days)" },
+    { id: 17, name: "Cybersecurity (4 Days)" },
+    { id: 18, name: "Future Health !NEW (2 Days)" },
+    { id: 19, name: "AI Everything (4 Days)" },
+    { id: 20, name: "Future Health !NEW (2 Days)" },
+  ];
+
+  const modalProductSubList = [
+    { id: 21, name: "Digital Cities", days: 1 },
+    { id: 22, name: "Edtech", days: 1 },
+    { id: 23, name: "Energy Transition", days: 1 },
+    { id: 24, name: "Intelligent Connectivity", days: 1 },
+    { id: 25, name: "Digital Finance", days: 1 },
+    { id: 26, name: "Future Mobility", days: 1 },
+  ];
+
+
+  const mainCategories = [
+    "Artificial Intelligence & Robotics",
+    "Cybersecurity",
+    "Future Mobility",
+    "Fintech",
+    "Health Tech",
+  ];
+
+  const subCategories = [
+    "Edge Computing",
+    "Cloud Computing",
+    "Cognitive Computing",
+  ];
+
+  const [selectedMain, setSelectedMain] = useState(mainCategories[0]);
+  const [selectedSub, setSelectedSub] = useState(subCategories[0]);
+
+  //  Promo Code
+
+  const [promoCode, setPromoCode] = useState("")
+  const [appliedPromo, setAppliedPromo] = useState(null)
+  const [error, setError] = useState("")
+
+
+  // Mock promo codes for demonstration
+
+  const validPromoCodes = {
+    GITEX15: { discount: 19, type: "percentage", discountAmount: 40, appliedTo: "2 lowest-priced tickets" },
+    SAVE20: { discount: 20, type: "percentage", discountAmount: 15, appliedTo: "all tickets" },
+    DISCOUNT50: { discount: 50, type: "fixed", discountAmount: 20, appliedTo: "premium tickets" },
+  }
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) {
+      setError("Please enter a promo code");
+      return;
+    }
+
+    const promo = validPromoCodes[promoCode.toUpperCase()];
+
+    if (promo) {
+      setAppliedPromo({
+        code: promoCode.toUpperCase(),
+        discount: promo.discount,
+        type: promo.type,
+        appliedTo: promo.appliedTo,
+      });
+
+      setError("");
+    } else {
+      setError("Invalid promo code. Please try again.");
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null)
+    setPromoCode("")
+    setError("")
+    onPromoRemoved?.()
+  }
+
 
   return (
     <div className="min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${background})` }}>
@@ -705,13 +826,37 @@ export default function RegistrationForm() {
       </div>
 
       <div className="mx-auto px-4 py-5">
-        <div className={currentStep === 1 ? "block" : "hidden"}>
-          <Step1 />
-        </div>
-        <div className={currentStep === 2 ? "block" : "hidden"}>
-          <Step2 />
-        </div>
-
+        {currentStep === 1 && (
+          <Step1
+            formData={formData}
+            formErrors={formErrors}
+            updateFormData={updateFormData}
+            countryCodes={countryCodes}
+            productsList={productsList}
+            selectedProducts={selectedProducts}
+            handleProductToggle={handleProductToggle}
+            setModal={setModal}
+            modal={modal}
+            mainCategories={mainCategories}
+            subCategories={subCategories}
+            selectedMain={selectedMain}
+            setSelectedMain={setSelectedMain}
+            selectedSub={setSelectedSub}
+          />
+        )}
+        {currentStep === 2 && (
+          <Step2
+            formData={formData}
+            updateFormData={updateFormData}
+            promoCode={promoCode}
+            setPromoCode={setPromoCode}
+            error={error}
+            appliedPromo={appliedPromo}
+            validPromoCodes={validPromoCodes}
+            handleApplyPromo={handleApplyPromo}
+            handleRemovePromo={handleRemovePromo}
+          />
+        )}
         <div className="flex justify-center space-x-4 mt-5">
           {currentStep > 1 && (
             <button
