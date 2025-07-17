@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useCallback } from "react"
 import { Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { X } from 'lucide-react';
 import background from "../assets/image 4.png";
@@ -29,6 +29,7 @@ export default function RegistrationForm() {
     promoCode: '',
     agreeTerms: '',
     agreeMarketing: '',
+    modalapply: false
   })
 
 
@@ -47,19 +48,43 @@ export default function RegistrationForm() {
 
 
   const [currentStep, setCurrentStep] = useState(1)
+  const [formErrors, setFormErrors] = useState({});
 
-  const updateFormData = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }))
-  }
+  const updateFormData = useCallback((field, value) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormErrors((prev) => ({ ...prev, [field]: "" }));
+  }, []);
+
+
+  const validateForm = () => {
+    const errors = {};
+
+    if (!formData.firstName.trim()) errors.firstName = "First name is required";
+    if (!formData.lastName.trim()) errors.lastName = "Last name is required";
+    if (!formData.country.trim()) errors.country = "Country is required";
+    if (!formData.email.trim()) errors.email = "Email is required";
+    if (!formData.mobile.trim()) errors.mobile = "Mobile number is required";
+    if (!formData.companyName.trim()) errors.companyName = "Company name is required";
+    if (!formData.jobTitle.trim()) errors.jobTitle = "Job title is required";
+    if (!formData.companyType.trim()) errors.companyType = "Company type is required";
+    if (!formData.industry.trim()) errors.industry = "Industry is required";
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
 
 
   const nextStep = () => {
-    if (currentStep < 2) {
-      setCurrentStep(currentStep + 1)
-    } else if (currentStep === 2) {
-      navigate('/thank-you')
+    if (validateForm()) {
+      if (currentStep < 2) {
+        setCurrentStep(currentStep + 1);
+      } else if (currentStep === 2) {
+        navigate('/thank-you');
+      }
     }
-  }
+  };
+
 
   const prevStep = () => {
     if (currentStep > 1) {
@@ -106,8 +131,8 @@ export default function RegistrationForm() {
   };
 
   const handleApply = () => {
-    onApply(selectedProducts)
-    onClose()
+    setModal({ product: false })
+    setFormData({ ...formData, modalapply: true })
   }
 
   const modalProductList = [
@@ -122,13 +147,13 @@ export default function RegistrationForm() {
   ];
 
   const modalProductSubList = [
-  { id: 21, name: "Digital Cities", days: 1 },
-  { id: 22, name: "Edtech", days: 1 },
-  { id: 23, name: "Energy Transition", days: 1 },
-  { id: 24, name: "Intelligent Connectivity", days: 1 },
-  { id: 25, name: "Digital Finance", days: 1 },
-  { id: 26, name: "Future Mobility", days: 1 },
-];
+    { id: 21, name: "Digital Cities", days: 1 },
+    { id: 22, name: "Edtech", days: 1 },
+    { id: 23, name: "Energy Transition", days: 1 },
+    { id: 24, name: "Intelligent Connectivity", days: 1 },
+    { id: 25, name: "Digital Finance", days: 1 },
+    { id: 26, name: "Future Mobility", days: 1 },
+  ];
 
 
   const mainCategories = [
@@ -193,7 +218,7 @@ export default function RegistrationForm() {
   }
 
 
-  const Stepper = () => (
+  const Stepper = ({ currentStep }) => (
     <div className="flex items-center justify-center mb-2">
       {[1, 2].map((step, index) => (
         <React.Fragment key={step}>
@@ -203,9 +228,9 @@ export default function RegistrationForm() {
               : "bg-white border-gray-300 text-gray-400"
               }`}
           >
-            {step < currentStep ? <Check className="w-4 h-4" /> : <span className="text-sm font-medium">{step}</span>}
+            {step < currentStep ? (<Check className="w-4 h-4" />) : (<span className="text-sm font-medium">{step}</span>)}
           </div>
-          {index < 1 && <div className={`w-16 h-0.5 mx-2 ${step < currentStep ? "bg-green-600" : "bg-gray-300"}`} />}
+          {index < 1 && (<div className={`w-16 h-0.5 mx-2 ${step < currentStep ? "bg-green-600" : "bg-gray-300"}`} />)}
         </React.Fragment>
       ))}
     </div>
@@ -225,29 +250,40 @@ export default function RegistrationForm() {
         <div className="lg:col-span-2 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First name <span className="text-red-500"><span className="text-red-500">*</span></span></label>
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First name <span className="text-red-500"><span className="text-red-500">*</span></span></label>
               <input
                 type="text"
+                id="firstName"
+                name="firstName"
+                placeholder="Enter First Name"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.firstName}
                 onChange={(e) => updateFormData("firstName", e.target.value)}
               />
+              {formErrors.firstName && (<p className="text-sm text-red-500 italic mt-1">{formErrors.firstName}</p>)}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last name <span className="text-red-500">*</span></label>
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Last name <span className="text-red-500">*</span></label>
               <input
                 type="text"
+                id="lastName"
+                name="lastName"
+                placeholder="Enter Last Name"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.lastName}
                 onChange={(e) => updateFormData("lastName", e.target.value)}
               />
+              {formErrors.lastName && (<p className="text-sm text-red-500 italic mt-1">{formErrors.lastName}</p>)}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Country of residence <span className="text-red-500">*</span></label>
+              <label htmlFor="country" className="block text-sm font-medium text-gray-700 mb-1">Country of residence <span className="text-red-500">*</span></label>
               <select
+                id="country"
+                name="country"
+                autoComplete="country"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.country}
                 onChange={(e) => updateFormData("country", e.target.value)}
@@ -257,10 +293,14 @@ export default function RegistrationForm() {
                 <option value="US">United States</option>
                 <option value="UK">United Kingdom</option>
               </select>
+              {formErrors.country && (<p className="text-sm text-red-500 italic mt-1">{formErrors.country}</p>)}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Region</label>
+              <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">Region</label>
               <select
+                id="region"
+                name="region"
+                autoComplete="region"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.region}
                 onChange={(e) => updateFormData("region", e.target.value)}
@@ -269,23 +309,33 @@ export default function RegistrationForm() {
                 <option value="Dubai">Dubai</option>
                 <option value="Abu Dhabi">Abu Dhabi</option>
               </select>
+              {formErrors.country && (<p className="text-sm text-red-500 italic mt-1">{formErrors.country}</p>)}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email address <span className="text-red-500">*</span></label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email address <span className="text-red-500">*</span></label>
               <input
                 type="email"
+                id="email"
+                name="email"
+                autoComplete="email"
+                placeholder="Enter Email address"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.email}
                 onChange={(e) => updateFormData("email", e.target.value)}
               />
+              {formErrors.email && (<p className="text-sm text-red-500 italic mt-1">{formErrors.email}</p>)}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Email address</label>
+              <label htmlFor="confirmEmail" className="block text-sm font-medium text-gray-700 mb-1">Confirm Email address</label>
               <input
                 type="email"
+                id="confirmEmail"
+                name="confirmEmail"
+                autoComplete="email"
+                placeholder="Confirm Email address"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.confirmEmail}
                 onChange={(e) => updateFormData("confirmEmail", e.target.value)}
@@ -295,8 +345,10 @@ export default function RegistrationForm() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+              <label htmlFor="nationality" className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
               <select
+                id="nationality"
+                name="nationality"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.nationality}
                 onChange={(e) => updateFormData("nationality", e.target.value)}
@@ -307,9 +359,9 @@ export default function RegistrationForm() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile number <span className="text-red-500">*</span></label>
+              <label htmlFor="countrycode" className="block text-sm font-medium text-gray-700 mb-1">Mobile number <span className="text-red-500">*</span></label>
               <div className="flex">
-                <select className="p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out">
+                <select id="countrycode" name="countrycode" className="p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out">
                   {countryCodes.map((country, index) => (
                     <option key={index} value={country.code}>
                       {country.label} {country.code}
@@ -318,40 +370,54 @@ export default function RegistrationForm() {
                 </select>
                 <input
                   type="tel"
+                  id="mobile"
+                  name="mobile"
                   className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                   value={formData.mobile}
+                  placeholder="Enter Mobile"
                   onChange={(e) => updateFormData("mobile", e.target.value)}
                 />
               </div>
+              {formErrors.mobile && (<p className="text-sm text-red-500 italic mt-1">{formErrors.mobile}</p>)}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Company name <span className="text-red-500">*</span></label>
+              <label htmlFor="companyName" className="block text-sm font-medium text-gray-700 mb-1">Company name <span className="text-red-500">*</span></label>
               <input
                 type="text"
+                id="companyName"
+                name="companyName"
+                placeholder="Enter Company Name"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.companyName}
                 onChange={(e) => updateFormData("companyName", e.target.value)}
               />
+              {formErrors.companyName && (<p className="text-sm text-red-500 italic mt-1">{formErrors.companyName}</p>)}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Job title <span className="text-red-500">*</span></label>
+              <label htmlFor="jobTitle" className="block text-sm font-medium text-gray-700 mb-1">Job title <span className="text-red-500">*</span></label>
               <input
                 type="text"
+                id="jobTitle"
+                name="jobTitle"
+                placeholder="Enter Job title"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.jobTitle}
                 onChange={(e) => updateFormData("jobTitle", e.target.value)}
               />
+              {formErrors.jobTitle && (<p className="text-sm text-red-500 italic mt-1">{formErrors.jobTitle}</p>)}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Company type <span className="text-red-500">*</span></label>
+              <label htmlFor="companyType" className="block text-sm font-medium text-gray-700 mb-1">Company type <span className="text-red-500">*</span></label>
               <select
+                id="companyType"
+                name="companyType"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.companyType}
                 onChange={(e) => updateFormData("companyType", e.target.value)}
@@ -360,10 +426,13 @@ export default function RegistrationForm() {
                 <option value="Startup">Startup</option>
                 <option value="Enterprise">Enterprise</option>
               </select>
+              {formErrors.companyType && (<p className="text-sm text-red-500 italic mt-1">{formErrors.companyType}</p>)}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Industry <span className="text-red-500">*</span></label>
+              <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">Industry <span className="text-red-500">*</span></label>
               <select
+                id="industry"
+                name="industry"
                 className="w-full p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                 value={formData.industry}
                 onChange={(e) => updateFormData("industry", e.target.value)}
@@ -372,12 +441,13 @@ export default function RegistrationForm() {
                 <option value="Technology">Technology</option>
                 <option value="Finance">Finance</option>
               </select>
+              {formErrors.industry && (<p className="text-sm text-red-500 italic mt-1">{formErrors.industry}</p>)}
             </div>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-medium text-gray-700">
+              <label htmlFor="productsservices" className="block text-sm font-medium text-gray-700">
                 What products & services are you interested in? <span className="text-red-500">*</span>
               </label>
               <button
@@ -389,8 +459,19 @@ export default function RegistrationForm() {
               </button>
             </div>
 
+            <input
+              type="text"
+              id="productsservices"
+              name="productsservices"
+              readOnly
+              hidden
+              className="w-full p-2 border border-gray-300 rounded-md bg-gray-100 text-gray-700"
+              placeholder="Selected products will appear here"
+            />
+
             {/* Main Categories */}
 
+            {formData.modalapply && <>
             <div className="mb-4">
               <p className="text-sm font-semibold text-gray-800 mb-2">Main Categories</p>
               <div className="flex flex-wrap gap-2">
@@ -428,12 +509,14 @@ export default function RegistrationForm() {
                 ))}
               </div>
             </div>
+            </>}
 
             <div className="text-sm text-black-600 font-semibold mb-3">Select Workshop (Maximum 6 can Select)</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {productsList.map((product, index) => (
                 <label key={index} className="flex items-center space-x-2 text-md font-semibold">
                   <input
+                    id={product.id}
                     type="checkbox"
                     className="h-5 w-5 rounded border-black-500 text-green-600 focus:ring-green-500"
                     checked={selectedProducts.includes(product.id)}
@@ -483,9 +566,11 @@ export default function RegistrationForm() {
         </div>
 
         <div className="bg-green-50 p-4 rounded">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Have a promo code?</label>
+          <label htmlFor="promo" className="block text-sm font-medium text-gray-700 mb-2">Have a promo code?</label>
           <div className="flex gap-2">
             <input
+              id="promo"
+              name="promo"
               type="text"
               placeholder="Enter promo code"
               className="flex-1 p-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
@@ -569,8 +654,10 @@ export default function RegistrationForm() {
         </div>
 
         <div className="space-y-4">
-          <label className="flex items-start space-x-3">
+          <label htmlFor="agreeTerms" className="flex items-start space-x-3">
             <input
+              id="agreeTerms"
+              name="agreeTerms"
               type="checkbox"
               className="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500"
               checked={formData.agreeTerms}
@@ -591,8 +678,10 @@ export default function RegistrationForm() {
             </span>
           </label>
 
-          <label className="flex items-start space-x-3">
+          <label htmlFor="agreeMarketing" className="flex items-start space-x-3">
             <input
+              id="agreeMarketing"
+              name="agreeMarketing"
               type="checkbox"
               className="mt-1 rounded border-gray-300 text-green-600 focus:ring-green-500"
               checked={formData.agreeMarketing}
@@ -612,12 +701,16 @@ export default function RegistrationForm() {
   return (
     <div className="min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${background})` }}>
       <div className="relative py-8">
-        <Stepper />
+        <Stepper currentStep={currentStep} />
       </div>
 
       <div className="mx-auto px-4 py-5">
-        {currentStep === 1 && <Step1 />}
-        {currentStep === 2 && <Step2 />}
+        <div className={currentStep === 1 ? "block" : "hidden"}>
+          <Step1 />
+        </div>
+        <div className={currentStep === 2 ? "block" : "hidden"}>
+          <Step2 />
+        </div>
 
         <div className="flex justify-center space-x-4 mt-5">
           {currentStep > 1 && (
@@ -631,7 +724,11 @@ export default function RegistrationForm() {
           )}
           <button
             onClick={nextStep}
-            className="flex items-center space-x-2 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition-colors"
+            disabled={currentStep === 2 && (!formData.agreeTerms || !formData.agreeMarketing)}
+            className={`flex items-center space-x-2 px-6 py-2 rounded transition-colors ${currentStep === 2 && (!formData.agreeTerms || !formData.agreeMarketing)
+              ? 'bg-gray-400 cursor-not-allowed'
+              : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
           >
             <span>{currentStep === 2 ? "SUBMIT" : "NEXT"}</span>
             <ChevronRight className="w-4 h-4" />
@@ -704,11 +801,11 @@ export default function RegistrationForm() {
                       <label key={index} className="flex items-center space-x-2">
                         <input
                           type="checkbox"
-                         className="mt-1 h-5 w-5 rounded border-black text-green-600 focus:ring-green-500"
-                         checked={item.id == 23}
+                          className="mt-1 h-5 w-5 rounded border-black text-green-600 focus:ring-green-500"
+                          checked={item.id == 23}
                         />
                         <span className="text-gray-800">{item.name} {item.days && `(${item.days} Days)`}
-                        {item.count && <span className="text-gray-700 ml-1">({item.count})</span>}
+                          {item.count && <span className="text-gray-700 ml-1">({item.count})</span>}
                         </span>
                       </label>
                     ))}
