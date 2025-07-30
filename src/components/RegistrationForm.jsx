@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from "react"
+import React, { useState, useCallback, useEffect } from "react"
 import { Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { X } from 'lucide-react';
 import background from "../assets/image 4.png";
@@ -86,14 +86,54 @@ export const Stepper = ({ currentStep }) => (
               : "bg-white border-gray-300 text-gray-400"
               }`}
           >
-            {step < currentStep ? (<Check className="w-4 h-4" />) : (<span className="text-sm font-medium">{step}</span>)}
+            {step < currentStep ? <Check className="w-4 h-4" /> : <span className="text-sm font-medium">{step}</span>}
           </div>
-          {index < 1 && (<div className={`w-16 h-0.5 mx-2 ${step < currentStep ? "bg-green-600" : "bg-gray-300"}`} />)}
+          {index < 1 && <div className={`w-16 h-0.5 mx-2 ${step < currentStep ? "bg-green-600" : "bg-gray-300"}`} />}
         </React.Fragment>
       ))}
     </div>
   )
 
+  // Ticket Summary Component
+
+  export const TicketSummary = ({ selectedTickets }) => {
+    if (!selectedTickets || selectedTickets.length === 0) {
+      return null
+    }
+
+    return (
+      <div className="bg-white rounded-lg shadow-md p-4 mb-6">
+        <h2 className="text-lg font-semibold mb-3">Your Ticket Summary</h2>
+        <div className="space-y-3">
+          {selectedTickets.map((ticket) => (
+            <div key={ticket.id} className="flex justify-between items-center border-b pb-2">
+              <div>
+                <p className="font-medium">
+                  {ticket.name} x {ticket.quantity}
+                </p>
+                {ticket.selectedServices.length > 0 && (
+                  <div className="text-sm text-gray-600 mt-1">
+                    <p>Selected services:</p>
+                    <ul className="list-disc list-inside ml-2">
+                      {ticket.selectedServices.map((serviceId) => {
+                        const service = ticket.services.find((s) => s.id === serviceId)
+                        return <li key={serviceId}>{service?.name}</li>
+                      })}
+                    </ul>
+                  </div>
+                )}
+              </div>
+              <p className="font-bold">EUR {(ticket.price * ticket.quantity).toFixed(2)}</p>
+            </div>
+          ))}
+          <div className="flex justify-between items-center pt-2 font-bold">
+            <p>Total</p>
+            <p>EUR {selectedTickets.reduce((sum, ticket) => sum + ticket.price * ticket.quantity, 0).toFixed(2)}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
 export const Step1 = ({
   formData,
@@ -111,21 +151,25 @@ export const Step1 = ({
   setSelectedMain,
   selectedSub,
   setSelectedSub,
+  selectedTickets,
 }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="bg-green-600 text-white p-4 flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Registration Information 1</h2>
-        <div className="text-sm">
-          <span className="bg-green-700 px-2 py-1 rounded">PREMIUM TICKET - FREEIncl. 19% VAT</span>
-        </div>
+        <h2 className="text-xl font-semibold">Registration Information</h2>
       </div>
 
-      <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="p-6">
+
+      {/* Ticket Summary */}
+
+      <TicketSummary selectedTickets={selectedTickets} />
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First name <span className="text-red-500"><span className="text-red-500">*</span></span></label>
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First name <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 id="firstName"
@@ -135,7 +179,7 @@ export const Step1 = ({
                 value={formData.firstName}
                 onChange={(e) => updateFormData("firstName", e.target.value)}
               />
-              {formErrors.firstName && (<p className="text-sm text-red-500 italic mt-1">{formErrors.firstName}</p>)}
+              {formErrors.firstName && <p className="text-sm text-red-500 italic mt-1">{formErrors.firstName}</p>}
             </div>
             <div>
               <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Last name <span className="text-red-500">*</span></label>
@@ -148,7 +192,7 @@ export const Step1 = ({
                 value={formData.lastName}
                 onChange={(e) => updateFormData("lastName", e.target.value)}
               />
-              {formErrors.lastName && (<p className="text-sm text-red-500 italic mt-1">{formErrors.lastName}</p>)}
+              {formErrors.lastName && <p className="text-sm text-red-500 italic mt-1">{formErrors.lastName}</p>}
             </div>
           </div>
 
@@ -168,10 +212,10 @@ export const Step1 = ({
                 <option value="US">United States</option>
                 <option value="UK">United Kingdom</option>
               </select>
-              {formErrors.country && (<p className="text-sm text-red-500 italic mt-1">{formErrors.country}</p>)}
+              {formErrors.country && <p className="text-sm text-red-500 italic mt-1">{formErrors.country}</p>}
             </div>
             <div>
-              <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">Region</label>
+              <label htmlFor="region" className="block text-sm font-medium text-gray-700 mb-1">Region <span className="text-red-500">*</span></label>
               <select
                 id="region"
                 name="region"
@@ -184,7 +228,7 @@ export const Step1 = ({
                 <option value="Dubai">Dubai</option>
                 <option value="Abu Dhabi">Abu Dhabi</option>
               </select>
-              {formErrors.country && (<p className="text-sm text-red-500 italic mt-1">{formErrors.country}</p>)}
+              {formErrors.region && <p className="text-sm text-red-500 italic mt-1">{formErrors.region}</p>}
             </div>
           </div>
 
@@ -201,10 +245,10 @@ export const Step1 = ({
                 value={formData.email}
                 onChange={(e) => updateFormData("email", e.target.value)}
               />
-              {formErrors.email && (<p className="text-sm text-red-500 italic mt-1">{formErrors.email}</p>)}
+              {formErrors.email && <p className="text-sm text-red-500 italic mt-1">{formErrors.email}</p>}
             </div>
             <div>
-              <label htmlFor="confirmEmail" className="block text-sm font-medium text-gray-700 mb-1">Confirm Email address<span className="text-red-500">*</span></label>
+              <label htmlFor="confirmEmail" className="block text-sm font-medium text-gray-700 mb-1">Confirm Email address <span className="text-red-500">*</span></label>
               <input
                 type="email"
                 id="confirmEmail"
@@ -221,7 +265,7 @@ export const Step1 = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="nationality" className="block text-sm font-medium text-gray-700 mb-1">Nationality</label>
+              <label htmlFor="nationality" className="block text-sm font-medium text-gray-700 mb-1">Nationality <span className="text-red-500">*</span></label>
               <select
                 id="nationality"
                 name="nationality"
@@ -233,6 +277,7 @@ export const Step1 = ({
                 <option value="UAE">Emirati</option>
                 <option value="US">American</option>
               </select>
+              {formErrors.nationality && <p className="text-sm text-red-500 italic mt-1">{formErrors.nationality}</p>}
             </div>
             <div>
               <label htmlFor="countrycode" className="block text-sm font-medium text-gray-700 mb-1">Mobile number <span className="text-red-500">*</span></label>
@@ -245,16 +290,19 @@ export const Step1 = ({
                   ))}
                 </select>
                 <input
-                  type="number"
+                  type="tel"
                   id="mobile"
                   name="mobile"
                   className="flex-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-150 ease-in-out"
                   value={formData.mobile}
                   placeholder="Enter Mobile"
-                  onChange={(e) => updateFormData("mobile", e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/[^0-9]/g, "")
+                    updateFormData("mobile", value)
+                  }}
                 />
               </div>
-              {formErrors.mobile && (<p className="text-sm text-red-500 italic mt-1">{formErrors.mobile}</p>)}
+              {formErrors.mobile && <p className="text-sm text-red-500 italic mt-1">{formErrors.mobile}</p>}
             </div>
           </div>
 
@@ -270,7 +318,7 @@ export const Step1 = ({
                 value={formData.companyName}
                 onChange={(e) => updateFormData("companyName", e.target.value)}
               />
-              {formErrors.companyName && (<p className="text-sm text-red-500 italic mt-1">{formErrors.companyName}</p>)}
+              {formErrors.companyName && <p className="text-sm text-red-500 italic mt-1">{formErrors.companyName}</p>}
             </div>
 
             <div>
@@ -284,7 +332,7 @@ export const Step1 = ({
                 value={formData.jobTitle}
                 onChange={(e) => updateFormData("jobTitle", e.target.value)}
               />
-              {formErrors.jobTitle && (<p className="text-sm text-red-500 italic mt-1">{formErrors.jobTitle}</p>)}
+              {formErrors.jobTitle && <p className="text-sm text-red-500 italic mt-1">{formErrors.jobTitle}</p>}
             </div>
           </div>
 
@@ -302,7 +350,7 @@ export const Step1 = ({
                 <option value="Startup">Startup</option>
                 <option value="Enterprise">Enterprise</option>
               </select>
-              {formErrors.companyType && (<p className="text-sm text-red-500 italic mt-1">{formErrors.companyType}</p>)}
+              {formErrors.companyType && <p className="text-sm text-red-500 italic mt-1">{formErrors.companyType}</p>}
             </div>
             <div>
               <label htmlFor="industry" className="block text-sm font-medium text-gray-700 mb-1">Industry <span className="text-red-500">*</span></label>
@@ -317,7 +365,7 @@ export const Step1 = ({
                 <option value="Technology">Technology</option>
                 <option value="Finance">Finance</option>
               </select>
-              {formErrors.industry && (<p className="text-sm text-red-500 italic mt-1">{formErrors.industry}</p>)}
+              {formErrors.industry && <p className="text-sm text-red-500 italic mt-1">{formErrors.industry}</p>}
             </div>
           </div>
 
@@ -347,7 +395,7 @@ export const Step1 = ({
 
             {/* Main Categories */}
 
-            {formData.modalapply && <>
+            {formData.modalapply && (<>
             <div className="mb-4">
               <p className="text-sm font-semibold text-gray-800 mb-2">Main Categories</p>
               <div className="flex flex-wrap gap-2">
@@ -385,7 +433,7 @@ export const Step1 = ({
                 ))}
               </div>
             </div>
-            </>}
+            </>)}
 
             <div className="text-sm text-black-600 font-semibold mb-3">Select Workshop (Maximum 6 can Select)</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -402,6 +450,9 @@ export const Step1 = ({
                 </label>
               ))}
             </div>
+            {formErrors.selectedProducts && (
+              <p className="text-sm text-red-500 italic mt-1">{formErrors.selectedProducts}</p>
+            )}
           </div>
         </div>
 
@@ -419,6 +470,7 @@ export const Step1 = ({
             <div className="text-sm text-gray-500 mb-2">BADGE CATEGORY</div>
             <div className="text-2xl font-bold text-gray-800">VISITOR</div>
           </div>
+          </div>
         </div>
       </div>
     </div>
@@ -435,6 +487,8 @@ export const Step2 = ({
   validPromoCodes,
   handleApplyPromo,
   handleRemovePromo,
+  selectedTickets,
+  totalPrice,
 }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -443,15 +497,22 @@ export const Step2 = ({
       </div>
 
       <div className="p-6 space-y-6">
-        <div className="flex justify-between items-center py-3 border-b">
-          <span className="font-medium">PREMIUM TICKET x 2</span>
-          <span className="font-bold">EUR 50.19</span>
-        </div>
+      {/* Ticket Summary */}
 
-        <div className="flex justify-between items-center py-3 border-b font-bold">
-          <span>Student Ticket Access On Day 3 Only</span>
-          <span>EUR 30.40 SUBJECT TO APPROVAL Incl. 19%</span>
+      <TicketSummary selectedTickets={selectedTickets} />
+
+      {selectedTickets && selectedTickets.length > 0 && (
+        <div className="space-y-4">
+          {selectedTickets.map((ticket) => (
+            <div key={ticket.id} className="flex justify-between items-center py-3 border-b">
+              <span className="font-medium">
+                {ticket.name} x {ticket.quantity}
+              </span>
+              <span className="font-bold">EUR {(ticket.price * ticket.quantity).toFixed(2)}</span>
+            </div>
+          ))}
         </div>
+      )}
 
         <div className="bg-green-50 p-4 rounded">
           <label htmlFor="promo" className="block text-sm font-medium text-gray-700 mb-2">Have a promo code?</label>
@@ -493,7 +554,8 @@ export const Step2 = ({
           )}
 
 
-          {promoCode !== "" && appliedPromo?.code && error === "" && <>
+          {promoCode !== "" && appliedPromo?.code && error === "" && (
+          <>
             <div className="space-y-3">
               {/* Success Message */}
               <div className="text-green-700 font-medium mt-2">
@@ -531,13 +593,14 @@ export const Step2 = ({
               </div>
             </div>
 
-          </>}
+          </>
+        )}
         </div>
 
 
         <div className="text-right">
           <div className="text-2xl font-bold">
-            Total: EUR 300 <span className="text-sm text-gray-500">inc tax VAT</span>
+            Total: EUR {totalPrice.toFixed(2)} <span className="text-sm text-gray-500">inc tax VAT</span>
           </div>
         </div>
 
@@ -606,28 +669,34 @@ export default function RegistrationForm() {
     industry: '',
     selectedProducts: '',
     promoCode: '',
-    agreeTerms: '',
-    agreeMarketing: '',
-    modalapply: false
+    agreeTerms: false,
+    agreeMarketing: false,
+    modalapply: false,
   })
 
-
-  const countryCodes = [
-    { code: "+971", label: "🇦🇪" },
-    { code: "+1", label: "🇺🇸" },
-    { code: "+91", label: "🇮🇳" },
-    { code: "+44", label: "🇬🇧" },
-    { code: "+81", label: "🇯🇵" },
-    { code: "+61", label: "🇦🇺" },
-    { code: "+49", label: "🇩🇪" },
-    { code: "+33", label: "🇫🇷" },
-    { code: "+39", label: "🇮🇹" },
-    { code: "+86", label: "🇨🇳" },
-  ];
-
-
   const [currentStep, setCurrentStep] = useState(1)
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState({})
+  const [selectedTickets, setSelectedTickets] = useState([])
+  const [totalPrice, setTotalPrice] = useState(0)
+
+  // Load selected tickets from session storage
+
+  useEffect(() => {
+    const ticketsFromStorage = sessionStorage.getItem("selectedTickets")
+    if (ticketsFromStorage) {
+      const parsedTickets = JSON.parse(ticketsFromStorage)
+      setSelectedTickets(parsedTickets)
+
+      // Calculate total price
+      const total = parsedTickets.reduce((sum, ticket) => {
+        return sum + ticket.price * ticket.quantity
+      }, 0)
+      setTotalPrice(total)
+    } else {
+      // If no tickets are selected, redirect to ticket selection page
+      navigate("/")
+    }
+  }, [navigate])
 
   const updateFormData = useCallback((field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -636,40 +705,46 @@ export default function RegistrationForm() {
 
 
   const validateForm = () => {
-    const errors = {};
+    const errors = {}
 
-    if (!formData.firstName.trim()) errors.firstName = "First name is required";
-    if (!formData.lastName.trim()) errors.lastName = "Last name is required";
-    if (!formData.country.trim()) errors.country = "Country is required";
+    // All fields are mandatory
+    if (!formData.firstName.trim()) errors.firstName = "First name is required"
+    if (!formData.lastName.trim()) errors.lastName = "Last name is required"
+    if (!formData.country.trim()) errors.country = "Country is required"
+    if (!formData.region.trim()) errors.region = "Region is required"
+    if (!formData.nationality.trim()) errors.nationality = "Nationality is required"
 
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!formData.email.trim()) {
-      errors.email = "Email is required";
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
-        errors.email = "Invalid email format";
-      }
+      errors.email = "Email is required"
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = "Invalid email format";
     }
 
+    // Confirm email validation
     if (!formData.confirmEmail.trim()) {
-      errors.confirmEmail = "Please confirm your email";
+      errors.confirmEmail = "Please confirm your email"
     } else if (formData.email !== formData.confirmEmail) {
-      errors.confirmEmail = "Emails do not match";
+      errors.confirmEmail = "Emails do not match"
     }
 
+    // Mobile number validation - only numbers allowed
     if (!formData.mobile.trim()) {
-      errors.mobile = "Mobile number is required";
-    } else {
-      const mobileRegex = /^[0-9]{10}$/;
-      if (!mobileRegex.test(formData.mobile)) {
-        errors.mobile = "Invalid mobile number (must be 10 digits)";
-      }
+      errors.mobile = "Mobile number is required"
+    } else if (!/^\d+$/.test(formData.mobile)) {
+        errors.mobile = "Mobile number must contain only digits (0-9)"
     }
 
-    if (!formData.companyName.trim()) errors.companyName = "Company name is required";
-    if (!formData.jobTitle.trim()) errors.jobTitle = "Job title is required";
-    if (!formData.companyType.trim()) errors.companyType = "Company type is required";
-    if (!formData.industry.trim()) errors.industry = "Industry is required";
+    if (!formData.companyName.trim()) errors.companyName = "Company name is required"
+    if (!formData.jobTitle.trim()) errors.jobTitle = "Job title is required"
+    if (!formData.companyType.trim()) errors.companyType = "Company type is required"
+    if (!formData.industry.trim()) errors.industry = "Industry is required"
+
+    // Validate product selection
+    if (selectedProducts.length === 0) {
+      errors.selectedProducts = "Please select at least one product/service"
+    }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -679,9 +754,13 @@ export default function RegistrationForm() {
   const nextStep = () => {
     if (validateForm()) {
       if (currentStep < 2) {
-        setCurrentStep(currentStep + 1);
+        setCurrentStep(currentStep + 1)
       } else if (currentStep === 2) {
-        navigate('/thank-you');
+        if (!formData.agreeTerms || !formData.agreeMarketing) {
+          alert("Please agree to the terms and marketing consent.")
+          return
+        }
+        navigate("/thank-you")
       }
     }
   };
@@ -704,72 +783,16 @@ export default function RegistrationForm() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedProducts, setSelectedProducts] = useState([])
 
-  const productsList = [
-    { id: 1, name: "Global Leaders Forum NEW", days: 3 },
-    { id: 2, name: "GITEX Main Stage", days: 1 },
-    { id: 3, name: "Artificial Intelligence & Robotics", days: 1 },
-    { id: 4, name: "Future Health NEW", days: 2 },
-    { id: 5, name: "Cybersecurity", days: 1 },
-    { id: 6, name: "Future Health NEW", days: 2 },
-    { id: 7, name: "Digital Cities", days: 1 },
-    { id: 8, name: "Fintech", days: 1 },
-    { id: 9, name: "Energy Transition", days: 1 },
-    { id: 10, name: "Intelligent Connectivity", days: 1 },
-    { id: 11, name: "Digital Finance", days: 1 },
-    { id: 12, name: "Future Mobility", days: 1 },
-  ]
-
-  const filteredProducts = searchQuery
-    ? productsList.filter((product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : productsList
-
-  const handleProductToggle = (productId) => {
+  const handleProductToggle = useCallback((productId) => {
     setSelectedProducts((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId],
     );
-  };
+  }, [])
 
-  const handleApply = () => {
+  const handleApply = useCallback(() => {
     setModal({ product: false })
-    setFormData({ ...formData, modalapply: true })
-  }
-
-  const modalProductList = [
-    { id: 13, name: "Global Leaders Forum !NEW (3 Days)" },
-    { id: 14, name: "GITEX Main Stage" },
-    { id: 15, name: "Artificial Intelligence & Robotics (15)" },
-    { id: 16, name: "Future Health !NEW (2 Days)" },
-    { id: 17, name: "Cybersecurity (4 Days)" },
-    { id: 18, name: "Future Health !NEW (2 Days)" },
-    { id: 19, name: "AI Everything (4 Days)" },
-    { id: 20, name: "Future Health !NEW (2 Days)" },
-  ];
-
-  const modalProductSubList = [
-    { id: 21, name: "Digital Cities", days: 1 },
-    { id: 22, name: "Edtech", days: 1 },
-    { id: 23, name: "Energy Transition", days: 1 },
-    { id: 24, name: "Intelligent Connectivity", days: 1 },
-    { id: 25, name: "Digital Finance", days: 1 },
-    { id: 26, name: "Future Mobility", days: 1 },
-  ];
-
-
-  const mainCategories = [
-    "Artificial Intelligence & Robotics",
-    "Cybersecurity",
-    "Future Mobility",
-    "Fintech",
-    "Health Tech",
-  ];
-
-  const subCategories = [
-    "Edge Computing",
-    "Cloud Computing",
-    "Cognitive Computing",
-  ];
+    setFormData((prev) => ({ ...prev, modalapply: true }))
+  }, [])
 
   const [selectedMain, setSelectedMain] = useState(mainCategories[0]);
   const [selectedSub, setSelectedSub] = useState(subCategories[0]);
@@ -780,23 +803,12 @@ export default function RegistrationForm() {
   const [appliedPromo, setAppliedPromo] = useState(null)
   const [error, setError] = useState("")
 
-
-  // Mock promo codes for demonstration
-
-  const validPromoCodes = {
-    GITEX15: { discount: 19, type: "percentage", discountAmount: 40, appliedTo: "2 lowest-priced tickets" },
-    SAVE20: { discount: 20, type: "percentage", discountAmount: 15, appliedTo: "all tickets" },
-    DISCOUNT50: { discount: 50, type: "fixed", discountAmount: 20, appliedTo: "premium tickets" },
-  }
-
-  const handleApplyPromo = async () => {
+ const handleApplyPromo = useCallback(async () => {
     if (!promoCode.trim()) {
-      setError("Please enter a promo code");
-      return;
+      setError("Please enter a promo code")
+      return
     }
-
     const promo = validPromoCodes[promoCode.toUpperCase()];
-
     if (promo) {
       setAppliedPromo({
         code: promoCode.toUpperCase(),
@@ -805,19 +817,30 @@ export default function RegistrationForm() {
         appliedTo: promo.appliedTo,
       });
 
+      // Apply discount to total price
+      if (promo.type === "percentage") {
+        setTotalPrice((prev) => prev * (1 - promo.discount / 100))
+      } else {
+        setTotalPrice((prev) => Math.max(0, prev - promo.discount))
+      }
+
       setError("");
     } else {
       setError("Invalid promo code. Please try again.");
     }
-  };
+  }, [promoCode])
 
-  const handleRemovePromo = () => {
+  const handleRemovePromo = useCallback(() => {
     setAppliedPromo(null)
     setPromoCode("")
     setError("")
-    onPromoRemoved?.()
-  }
 
+    // Reset total price to original
+    const originalTotal = selectedTickets.reduce((sum, ticket) => {
+      return sum + ticket.price * ticket.quantity
+    }, 0)
+    setTotalPrice(originalTotal)
+  }, [selectedTickets])
 
   return (
     <div className="min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: `url(${background})` }}>
@@ -842,6 +865,7 @@ export default function RegistrationForm() {
             selectedMain={selectedMain}
             setSelectedMain={setSelectedMain}
             selectedSub={setSelectedSub}
+            selectedTickets={selectedTickets}
           />
         )}
         {currentStep === 2 && (
@@ -855,6 +879,8 @@ export default function RegistrationForm() {
             validPromoCodes={validPromoCodes}
             handleApplyPromo={handleApplyPromo}
             handleRemovePromo={handleRemovePromo}
+            selectedTickets={selectedTickets}
+            totalPrice={totalPrice}
           />
         )}
         <div className="flex justify-center space-x-4 mt-5">
