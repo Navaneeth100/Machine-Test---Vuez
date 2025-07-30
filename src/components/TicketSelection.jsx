@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom"
 const ticketTypes = [
     {
         id: 1,
-        name: "VISITOR 3 DAY ACCESS TICKET",
+        name: "VISITOR 1 DAY ACCESS TICKET",
         price: 32.5,
         oldPrice: 45,
         isFree: false,
@@ -24,10 +24,10 @@ const ticketTypes = [
     },
     {
         id: 2,
-        name: "VISITOR 3 DAY ACCESS TICKET",
-        price: 0,
-        oldPrice: null,
-        isFree: true,
+        name: "VISITOR 2 DAY ACCESS TICKET",
+        price: 20,
+        oldPrice: 30,
+        isFree: false,
         color: "bg-orange-500",
         label: null,
         services: [
@@ -42,9 +42,9 @@ const ticketTypes = [
     {
         id: 3,
         name: "VISITOR 3 DAY ACCESS TICKET",
-        price: 0,
-        oldPrice: null,
-        isFree: true,
+        price: 15,
+        oldPrice: 18,
+        isFree: false,
         color: "bg-green-500",
         label: "EXCLUSIVE",
         services: [
@@ -58,10 +58,10 @@ const ticketTypes = [
     },
     {
         id: 4,
-        name: "VISITOR 3 DAY ACCESS TICKET",
-        price: 0,
-        oldPrice: null,
-        isFree: true,
+        name: "VISITOR 4 DAY ACCESS TICKET",
+        price: 28,
+        oldPrice: 32,
+        isFree: false,
         color: "bg-red-500",
         label: "BEST SELLER",
         services: [
@@ -75,10 +75,10 @@ const ticketTypes = [
     },
     {
         id: 5,
-        name: "VISITOR 3 DAY ACCESS TICKET",
-        price: 0,
-        oldPrice: null,
-        isFree: true,
+        name: "VISITOR 5 DAY ACCESS TICKET",
+        price: 10,
+        oldPrice: 14,
+        isFree: false,
         color: "bg-green-600",
         label: null,
         services: [
@@ -92,10 +92,10 @@ const ticketTypes = [
     },
     {
         id: 6,
-        name: "VISITOR 3 DAY ACCESS TICKET",
-        price: 0,
-        oldPrice: null,
-        isFree: true,
+        name: "VISITOR 6 DAY ACCESS TICKET",
+        price: 40,
+        oldPrice: 43,
+        isFree: false,
         color: "bg-blue-500",
         label: null,
         services: [
@@ -144,6 +144,7 @@ export default function TicketSelection() {
     const proceedToRegistration = () => {
         if (total > 0 || tickets.some((t) => t.isFree && t.quantity > 0)) {
             sessionStorage.setItem("selectedTickets", JSON.stringify(tickets.filter((t) => t.quantity > 0)))
+            sessionStorage.setItem("selectedServices", JSON.stringify(tickets.flatMap(t => t.services)))
             navigate("/register")
         } else {
             alert("Please select at least one ticket to continue")
@@ -162,7 +163,7 @@ export default function TicketSelection() {
                             {/* Header */}
 
                             <h2 className="text-xl font-semibold mb-1">{ticket.name}</h2>
-                            <p className="text-sm text-gray-200 mb-2">3 DAYS ACCESS</p>
+                            <p className="text-sm text-gray-200 mb-2">{ticket.id} DAYS ACCESS</p>
 
                             {/* Price */}
 
@@ -192,7 +193,7 @@ export default function TicketSelection() {
                             {/* Quantity and Button */}
 
                             <div className="flex justify-between items-center mt-auto">
-                                {!ticket.isFree && <>
+                                {/* {!ticket.isFree && <> */}
                                     <div className="flex items-center space-x-2">
                                         <button
                                             onClick={() => decreaseQuantity(ticket.id)}
@@ -208,7 +209,7 @@ export default function TicketSelection() {
                                             +
                                         </button>
                                     </div>
-                                </>}
+                                {/* </>} */}
 
                                 <button
                                     onClick={proceedToRegistration}
@@ -242,7 +243,7 @@ export default function TicketSelection() {
                             : "bg-white text-black"
                             }`}
                     >
-                        <span>Buy Now</span>
+                        <span>Buy Now{tickets.some((t) => t.quantity > 0) ? ` (${tickets.reduce((acc, t) => acc + t.quantity, 0)} Ticket${tickets.reduce((acc, t) => acc + t.quantity, 0) > 1 ? "s" : "" })`  : ""}</span>
                         <ChevronRight className="w-4 h-4" />
                     </button>
                 </div>

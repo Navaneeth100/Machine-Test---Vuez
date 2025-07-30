@@ -21,16 +21,16 @@ import { useNavigate } from "react-router-dom";
   ];
 
   const productsList = [
-    { id: 1, name: "Global Leaders Forum NEW", days: 3 },
-    { id: 2, name: "GITEX Main Stage", days: 1 },
-    { id: 3, name: "Artificial Intelligence & Robotics", days: 1 },
-    { id: 4, name: "Future Health NEW", days: 2 },
-    { id: 5, name: "Cybersecurity", days: 1 },
+    { id: 1, name: "Access to Connections & Investor Lounge", days: 3 },
+    { id: 2, name: "Network Events", days: 1 },
+    { id: 3, name: "All Conference Tracks", days: 1 },
+    { id: 4, name: "All Masterclasses", days: 2 },
+    { id: 5, name: "3 Days Access to the Show", days: 1 },
     { id: 6, name: "Future Health NEW", days: 2 },
     { id: 7, name: "Digital Cities", days: 1 },
     { id: 8, name: "Fintech", days: 1 },
     { id: 9, name: "Energy Transition", days: 1 },
-    { id: 10, name: "Intelligent Connectivity", days: 1 },
+    { id: 10, name: "Access to Dubai Internet City Lounge", days: 1 },
     { id: 11, name: "Digital Finance", days: 1 },
     { id: 12, name: "Future Mobility", days: 1 },
   ]
@@ -111,7 +111,7 @@ export const Stepper = ({ currentStep }) => (
                 <p className="font-medium">
                   {ticket.name} x {ticket.quantity}
                 </p>
-                {ticket.selectedServices.length > 0 && (
+                {/* {ticket.selectedServices.length > 0 && (
                   <div className="text-sm text-gray-600 mt-1">
                     <p>Selected services:</p>
                     <ul className="list-disc list-inside ml-2">
@@ -121,7 +121,7 @@ export const Stepper = ({ currentStep }) => (
                       })}
                     </ul>
                   </div>
-                )}
+                )} */}
               </div>
               <p className="font-bold">EUR {(ticket.price * ticket.quantity).toFixed(2)}</p>
             </div>
@@ -152,6 +152,7 @@ export const Step1 = ({
   selectedSub,
   setSelectedSub,
   selectedTickets,
+  selectedServices
 }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -437,18 +438,23 @@ export const Step1 = ({
 
             <div className="text-sm text-black-600 font-semibold mb-3">Select Workshop (Maximum 6 can Select)</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              {productsList.map((product, index) => (
+              {productsList.map((product, index) => {
+              const matchedService = selectedServices.find(
+                (service) => service.name === product.name && service.included === true
+              );
+
+              return (
                 <label key={index} className="flex items-center space-x-2 text-md font-semibold">
                   <input
                     id={product.id}
                     type="checkbox"
                     className="h-5 w-5 rounded border-black-500 text-green-600 focus:ring-green-500"
-                    checked={selectedProducts.includes(product.id)}
+                    checked={selectedProducts.includes(product.id) || matchedService ? true : false}
                     onChange={() => handleProductToggle(product.id)}
                   />
                   <span>{product.name}</span>
                 </label>
-              ))}
+              )})}
             </div>
             {formErrors.selectedProducts && (
               <p className="text-sm text-red-500 italic mt-1">{formErrors.selectedProducts}</p>
@@ -501,7 +507,7 @@ export const Step2 = ({
 
       <TicketSummary selectedTickets={selectedTickets} />
 
-      {selectedTickets && selectedTickets.length > 0 && (
+      {/* {selectedTickets && selectedTickets.length > 0 && (
         <div className="space-y-4">
           {selectedTickets.map((ticket) => (
             <div key={ticket.id} className="flex justify-between items-center py-3 border-b">
@@ -512,7 +518,7 @@ export const Step2 = ({
             </div>
           ))}
         </div>
-      )}
+      )} */}
 
         <div className="bg-green-50 p-4 rounded">
           <label htmlFor="promo" className="block text-sm font-medium text-gray-700 mb-2">Have a promo code?</label>
@@ -531,7 +537,7 @@ export const Step2 = ({
 
           {/*  Error Notification */}
 
-          {error && (
+          {!(promoCode !== "" && appliedPromo?.code && error === "") && (
             <>
               <p className="text-red-600 text-sm italic py-2">{error}</p>
 
@@ -742,9 +748,9 @@ export default function RegistrationForm() {
     if (!formData.industry.trim()) errors.industry = "Industry is required"
 
     // Validate product selection
-    if (selectedProducts.length === 0) {
-      errors.selectedProducts = "Please select at least one product/service"
-    }
+    // if (selectedProducts.length === 0) {
+    //   errors.selectedProducts = "Please select at least one product/service"
+    // }
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -782,6 +788,12 @@ export default function RegistrationForm() {
 
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedProducts, setSelectedProducts] = useState([])
+  const [selectedServices, setSelectedServices] = useState([]);
+
+  useEffect(() => {
+    const servicesFromStorage = JSON.parse(sessionStorage.getItem("selectedServices")) || [];
+    setSelectedServices(servicesFromStorage);
+  }, []);
 
   const handleProductToggle = useCallback((productId) => {
     setSelectedProducts((prev) =>
@@ -866,6 +878,7 @@ export default function RegistrationForm() {
             setSelectedMain={setSelectedMain}
             selectedSub={setSelectedSub}
             selectedTickets={selectedTickets}
+            selectedServices={selectedServices}
           />
         )}
         {currentStep === 2 && (
