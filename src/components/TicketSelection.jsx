@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ChevronRight, CheckCircle } from "lucide-react"
+import { ChevronRight, CheckCircle, ChevronUp, ChevronDown } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 const ticketTypes = [
@@ -25,9 +25,9 @@ const ticketTypes = [
     {
         id: 2,
         name: "VISITOR 2 DAY ACCESS TICKET",
-        price: 20,
-        oldPrice: 30,
-        isFree: false,
+        price: 0,
+        oldPrice: null,
+        isFree: true,
         color: "bg-orange-500",
         label: null,
         services: [
@@ -42,9 +42,9 @@ const ticketTypes = [
     {
         id: 3,
         name: "VISITOR 3 DAY ACCESS TICKET",
-        price: 15,
-        oldPrice: 18,
-        isFree: false,
+        price: 0,
+        oldPrice: null,
+        isFree: true,
         color: "bg-green-500",
         label: "EXCLUSIVE",
         services: [
@@ -59,9 +59,9 @@ const ticketTypes = [
     {
         id: 4,
         name: "VISITOR 4 DAY ACCESS TICKET",
-        price: 28,
-        oldPrice: 32,
-        isFree: false,
+        price: 0,
+        oldPrice: null,
+        isFree: true,
         color: "bg-red-500",
         label: "BEST SELLER",
         services: [
@@ -76,9 +76,9 @@ const ticketTypes = [
     {
         id: 5,
         name: "VISITOR 5 DAY ACCESS TICKET",
-        price: 10,
-        oldPrice: 14,
-        isFree: false,
+        price: 0,
+        oldPrice: null,
+        isFree: true,
         color: "bg-green-600",
         label: null,
         services: [
@@ -93,9 +93,9 @@ const ticketTypes = [
     {
         id: 6,
         name: "VISITOR 6 DAY ACCESS TICKET",
-        price: 40,
-        oldPrice: 43,
-        isFree: false,
+        price: 0,
+        oldPrice: null,
+        isFree: true,
         color: "bg-blue-500",
         label: null,
         services: [
@@ -112,6 +112,7 @@ const ticketTypes = [
 
 export default function TicketSelection() {
     const navigate = useNavigate()
+    const [showSummary, setShowSummary] = useState(false);
     const [tickets, setTickets] = useState(
         ticketTypes.map((ticket) => ({
             ...ticket,
@@ -140,6 +141,14 @@ export default function TicketSelection() {
             ),
         )
     }
+
+    const quickSelect = (id) => {
+        setTickets((prev) =>
+            prev.map((ticket) =>
+                ticket.id === id ? { ...ticket, quantity: ticket.quantity + 1 } : ticket
+            )
+        );
+    };
 
     const proceedToRegistration = () => {
         if (total > 0 || tickets.some((t) => t.isFree && t.quantity > 0)) {
@@ -194,25 +203,25 @@ export default function TicketSelection() {
 
                             <div className="flex justify-between items-center mt-auto">
                                 {/* {!ticket.isFree && <> */}
-                                    <div className="flex items-center space-x-2">
-                                        <button
-                                            onClick={() => decreaseQuantity(ticket.id)}
-                                            className="text-xl px-3 py-1 bg-white text-black hover:bg-gray-200"
-                                        >
-                                            −
-                                        </button>
-                                        <span className="text-xl">{ticket.quantity}</span>
-                                        <button
-                                            onClick={() => increaseQuantity(ticket.id)}
-                                            className="text-xl px-3 py-1 bg-white text-black hover:bg-gray-200"
-                                        >
-                                            +
-                                        </button>
-                                    </div>
+                                <div className="flex items-center space-x-2">
+                                    <button
+                                        onClick={() => decreaseQuantity(ticket.id)}
+                                        className="text-xl px-3 py-1 bg-white text-black hover:bg-gray-200"
+                                    >
+                                        −
+                                    </button>
+                                    <span className="text-xl">{ticket.quantity}</span>
+                                    <button
+                                        onClick={() => increaseQuantity(ticket.id)}
+                                        className="text-xl px-3 py-1 bg-white text-black hover:bg-gray-200"
+                                    >
+                                        +
+                                    </button>
+                                </div>
                                 {/* </>} */}
 
                                 <button
-                                    onClick={proceedToRegistration}
+                                    onClick={() => quickSelect(ticket.id)}
                                     className={`ml-auto px-4 py-2 rounded font-medium ${ticket.isFree
                                         ? "bg-white text-black hover:bg-gray-200"
                                         : "bg-green-500 text-white hover:bg-green-600"
@@ -229,23 +238,62 @@ export default function TicketSelection() {
             {/* Sticky Total Footer */}
 
             <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-green-500 to-green-700 shadow-lg text-white px-6 py-3 p-4 z-50">
-                <div className="max-w-5xl mx-auto flex justify-between items-center">
-                    <div>
-                        <span>Total:</span>
-                        <span className="text-2xl font-bold ml-2">USD {total.toFixed(2)}</span>
-                        <span className="text-sm ml-1">incl. VAT</span>
+                <div className="max-w-5xl mx-auto">
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <span>Total:</span>
+                            <span className="text-2xl font-bold ml-2">USD {total.toFixed(2)}</span>
+                            <span className="text-sm ml-1">incl. VAT</span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            {tickets.some((t) => t.quantity > 0) && (
+                                <button
+                                    onClick={() => setShowSummary(!showSummary)}
+                                    className="flex items-center text-sm text-white font-medium"
+                                >
+                                    {showSummary ? "Hide Ticket Summary" : "View Ticket Summary"}
+                                    {showSummary ? (
+                                        <ChevronUp className="ml-1 w-4 h-4" />
+                                    ) : (
+                                        <ChevronDown className="ml-1 w-4 h-4" />
+                                    )}
+                                </button>
+                            )}
+
+                            <button
+                                onClick={proceedToRegistration}
+                                disabled={tickets.every((t) => t.quantity === 0)}
+                                className={`flex items-center space-x-2 px-6 py-2 rounded transition-colors ${total === 0 && !tickets.some((t) => t.isFree && t.quantity > 0)
+                                    ? "bg-gray-400 cursor-not-allowed"
+                                    : "bg-white text-black"
+                                    }`}
+                            >
+                                <span>Buy Now{tickets.some((t) => t.quantity > 0) ? ` (${tickets.reduce((acc, t) => acc + t.quantity, 0)} Ticket${tickets.reduce((acc, t) => acc + t.quantity, 0) > 1 ? "s" : ""})` : ""}</span>
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
-                    <button
-                        onClick={proceedToRegistration}
-                        disabled={total === 0 && !tickets.some((t) => t.isFree && t.quantity > 0)}
-                        className={`flex items-center space-x-2 px-6 py-2 rounded transition-colors ${total === 0 && !tickets.some((t) => t.isFree && t.quantity > 0)
-                            ? "bg-gray-400 cursor-not-allowed"
-                            : "bg-white text-black"
-                            }`}
-                    >
-                        <span>Buy Now{tickets.some((t) => t.quantity > 0) ? ` (${tickets.reduce((acc, t) => acc + t.quantity, 0)} Ticket${tickets.reduce((acc, t) => acc + t.quantity, 0) > 1 ? "s" : "" })`  : ""}</span>
-                        <ChevronRight className="w-4 h-4" />
-                    </button>
+
+                    {showSummary && (
+                        <div className="mt-4 pt-4 text-sm text-white max-h-[200px] overflow-y-auto">
+                            {tickets
+                                .filter((ticket) => ticket.quantity > 0)
+                                .map((ticket) => (
+                                    <div key={ticket.id} className="mb-3">
+                                        <div className="flex justify-between font-medium">
+                                            <span>{ticket.name} × {ticket.quantity}</span>
+                                            <span>{ticket.isFree ? "FREE" : `USD ${(ticket.price * ticket.quantity).toFixed(2)}`}</span>
+                                        </div>
+                                        <ul className="list-disc ml-5 mt-1 text-white">
+                                            {ticket.services.filter((s) => s.included).map((s) => (
+                                                <li key={s.id}>{s.name}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

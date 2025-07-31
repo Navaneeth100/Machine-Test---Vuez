@@ -482,10 +482,10 @@ export const Step1 = ({
             Registration Information 1
           </div>
           <div className="space-y-2 text-sm text-gray-600 text-center">
-            <div>FULL NAME</div>
-            <div>JOB TITLE</div>
-            <div>COMPANY NAME</div>
-            <div>COUNTRY OF RESIDENCE</div>
+            <div><strong className="mr-2">FULL NAME</strong> {formData.firstName || ""} {formData.lastName || ""}</div>
+            <div><strong className="mr-2">JOB TITLE</strong> {formData.jobTitle || ""}</div>
+            <div><strong className="mr-2">COMPANY NAME</strong> {formData.companyName || ""}</div>
+            <div><strong className="mr-2">COUNTRY OF RESIDENCE</strong> {formData.country || ""}</div>
           </div>
           <div className="mt-6 text-center">
             <div className="text-sm text-gray-500 mb-2">BADGE CATEGORY</div>
