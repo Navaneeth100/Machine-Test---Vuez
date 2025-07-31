@@ -5,6 +5,7 @@ import { X } from 'lucide-react';
 import background from "../assets/image 4.png";
 import Header from "../assets/Group 85.png";
 import { useNavigate } from "react-router-dom";
+import emailjs from 'emailjs-com';
 
 
   const countryCodes = [
@@ -111,17 +112,14 @@ export const Stepper = ({ currentStep }) => (
                 <p className="font-medium">
                   {ticket.name} x {ticket.quantity}
                 </p>
-                {/* {ticket.selectedServices.length > 0 && (
-                  <div className="text-sm text-gray-600 mt-1">
-                    <p>Selected services:</p>
-                    <ul className="list-disc list-inside ml-2">
-                      {ticket.selectedServices.map((serviceId) => {
-                        const service = ticket.services.find((s) => s.id === serviceId)
-                        return <li key={serviceId}>{service?.name}</li>
-                      })}
-                    </ul>
-                  </div>
-                )} */}
+                <p className="text-xs text-gray-500">{ticket.id} Day Access</p>
+                {ticket.services.some((s) => s.included) && (
+                <div className="text-sm text-gray-600 mt-1">
+                  <p className="mr-2">
+                    {ticket.services.filter((s) => s.included).map((s) => s.name).join(" | ")}
+                  </p>
+                </div>
+              )}
               </div>
               <p className="font-bold">EUR {(ticket.price * ticket.quantity).toFixed(2)}</p>
             </div>
@@ -138,6 +136,7 @@ export const Stepper = ({ currentStep }) => (
 export const Step1 = ({
   formData,
   formErrors,
+  setFormErrors,
   updateFormData,
   countryCodes,
   productsList,
@@ -154,6 +153,22 @@ export const Step1 = ({
   selectedTickets,
   selectedServices
 }) => {
+
+  useEffect(() => {
+  if (formData.confirmEmail && formData.confirmEmail !== formData.email) {
+    setFormErrors((prev) => ({
+      ...prev,
+      confirmEmail: "Email addresses do not match",
+    }));
+  } else {
+    setFormErrors((prev) => {
+      const updatedErrors = { ...prev };
+      delete updatedErrors.confirmEmail;
+      return updatedErrors;
+    });
+  }
+}, [formData.confirmEmail, formData.email]);
+
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
       <div className="bg-green-600 text-white p-4 flex justify-between items-center">
@@ -495,6 +510,7 @@ export const Step2 = ({
   handleRemovePromo,
   selectedTickets,
   totalPrice,
+  isSubmitting
 }) => {
   return (
     <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -756,6 +772,8 @@ export default function RegistrationForm() {
     return Object.keys(errors).length === 0;
   };
 
+const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const nextStep = () => {
     if (validateForm()) {
@@ -766,7 +784,53 @@ export default function RegistrationForm() {
           alert("Please agree to the terms and marketing consent.")
           return
         }
-        navigate("/thank-you")
+
+      const registrationDate = new Date().toISOString().slice(0, 16).replace("T", " ");
+      const ticketSummary = selectedTickets
+        .map((ticket) => `${ticket.name} x ${ticket.quantity} (ID: ${ticket.id})`)
+        .join("\n");
+
+      const servicesSummary = selectedTickets
+        .flatMap((ticket) =>
+          ticket.services.filter((s) => s.included).map((s) => s.name)
+        )
+        .join(" | ");
+
+      const templateParams = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        country: formData.country,
+        region: formData.region,
+        nationality: formData.nationality,
+        mobile: formData.mobile,
+        companyName: formData.companyName,
+        jobTitle: formData.jobTitle,
+        companyType: formData.companyType,
+        industry: formData.industry,
+        ticketSummary,
+        servicesSummary,
+        totalAmount: totalPrice.toFixed(2),
+        registrationDate,
+      };
+
+      setIsSubmitting(true);
+
+      // Send email
+
+      emailjs
+        .send("service_pgi7ctg", "template_6wcenwi", templateParams, "riuxyveVCCJhT-21m")
+        .then((response) => {
+          console.log("Email sent!", response.status, response.text);
+          navigate("/thank-you");
+        })
+        .catch((error) => {
+          console.error("Email failed to send:", error);
+          alert("There was an error sending confirmation email.");
+        })
+      .finally(() => {
+          setIsSubmitting(false);
+        });
       }
     }
   };
@@ -865,6 +929,7 @@ export default function RegistrationForm() {
           <Step1
             formData={formData}
             formErrors={formErrors}
+            setFormErrors={setFormErrors}
             updateFormData={updateFormData}
             countryCodes={countryCodes}
             productsList={productsList}
@@ -894,6 +959,7 @@ export default function RegistrationForm() {
             handleRemovePromo={handleRemovePromo}
             selectedTickets={selectedTickets}
             totalPrice={totalPrice}
+            isSubmitting={isSubmitting}
           />
         )}
         <div className="flex justify-center space-x-4 mt-5">
@@ -908,13 +974,13 @@ export default function RegistrationForm() {
           )}
           <button
             onClick={nextStep}
-            disabled={currentStep === 2 && (!formData.agreeTerms || !formData.agreeMarketing)}
-            className={`flex items-center space-x-2 px-6 py-2 rounded transition-colors ${currentStep === 2 && (!formData.agreeTerms || !formData.agreeMarketing)
+            disabled={(currentStep === 2 && (!formData.agreeTerms || !formData.agreeMarketing)) || isSubmitting}
+            className={`flex items-center space-x-2 px-6 py-2 rounded transition-colors ${(currentStep === 2 && (!formData.agreeTerms || !formData.agreeMarketing)) || isSubmitting
               ? 'bg-gray-400 cursor-not-allowed'
               : 'bg-green-600 text-white hover:bg-green-700'
               }`}
           >
-            <span>{currentStep === 2 ? "SUBMIT" : "NEXT"}</span>
+            <span>{currentStep === 2 ? isSubmitting ? "SUBMITTING..." : "SUBMIT" : "NEXT"}</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
